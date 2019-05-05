@@ -18,6 +18,24 @@ users = {}
 START_CREDENTIALS = 0
 GET_TERM = 1
 GET_DAY = 2
+PREDICT_SUBJECT = 3
+
+
+def check_creds(f):
+    def wrap(bot, update):
+        global users
+        chat = update.message.chat_id
+        try:
+            return f(bot, update)
+        except CredentialsError:
+            try:
+                del users[chat]
+            except KeyError:
+                pass
+            bot.send_message(chat_id=chat, text="Ваш логин или пароль более не подходит для входа в систему, для того, чтобы продолжить работу с ботом используйте команду /start и введите ваши новые данные для входа")
+            return ConversationHandler.END
+
+    return wrap
 
 
 def start(bot, update):
@@ -70,6 +88,7 @@ def helpp(bot, update):
                 '/diary_term - получить оценки за выбранную четверть/полугодие; \n' \
                 '/diary_today - показать страницу дневника за сегодня; \n' \
                 '/diary_day - показать страницу дневника за указанный день; \n' \
+                '/predict - предсказать средний балл за указанный предмет (имя предмета не чувствительно к регистру, также не обязательно писать его полностью, достаточно, например "русский" или "обж"); \n' \
                 '/cancel - отменить действие.'
     
     bot.send_message(chat_id=chat, text=reply_msg, parse_mode=telegram.ParseMode.HTML)
@@ -82,6 +101,7 @@ def cancel(bot, update):
     return ConversationHandler.END
 
 
+@check_creds
 def get_profile_info(bot, update):
     global users
     chat = update.message.chat_id
@@ -103,6 +123,7 @@ def get_profile_info(bot, update):
     bot.send_message(chat_id=chat, text=reply_msg, parse_mode=telegram.ParseMode.HTML)
 
 
+@check_creds
 def get_diary_curterm(bot, update):
     global users
     chat = update.message.chat_id
@@ -119,6 +140,7 @@ def get_diary_term(bot, update):
     return GET_TERM
 
 
+@check_creds
 def get_diary_numterm(bot, update):
     global users
     chat = update.message.chat_id
@@ -135,6 +157,7 @@ def get_diary_numterm(bot, update):
     return ConversationHandler.END
 
 
+@check_creds
 def get_diary_today(bot, update):
     global users
     chat = update.message.chat_id
@@ -172,6 +195,7 @@ def get_diary_day(bot, update):
     return GET_DAY
 
 
+@check_creds
 def get_diary_numday(bot, update):
     global users
     chat = update.message.chat_id
@@ -210,6 +234,32 @@ def get_diary_numday(bot, update):
     return ConversationHandler.END
 
 
+def predict(bot, update):
+    chat = update.message.chat_id
+    bot.send_message(chat_id=chat, text='Введите предмет и оценки, которые вы планируете получить в формате "Английский 5 5 5 5"')
+    
+    return PREDICT_SUBJECT
+
+
+@check_creds
+def predict_subject(bot, update):
+    global users
+
+    chat = update.message.chat_id
+    reply = update.message.text.split()
+    if len(reply) < 2:
+        bot.send_message(chat_id=chat, text="Неправильный формат. Проверьте правильность введенных данных и попробуйте еще раз (учитывайте, что вы не можете указать менее одной оценки)")
+        return PREDICT_SUBJECT
+    diary = users[chat].diary_term()
+    subject = diary.get_subject(reply[0])
+    if subject is None:
+        bot.send_message(chat_id=chat, text="Неправильный формат. Проверьте правильность введенных данных и попробуйте еще раз (учитывайте, что вы не можете указать менее одной оценки)")
+        return PREDICT_SUBJECT
+    new_grades = list(map(int, reply[1:]))
+    bot.send_message(chat_id=chat, text='Ваш новый балл средний балл будет равен {}'.format(subject.predict(new_grades)))
+    return ConversationHandler.END
+
+
 def shutdown(bot, update):
     global updater
 
@@ -242,6 +292,8 @@ def main():
 
     get_diary_day_handler = CommandHandler('diary_day', get_diary_day)
 
+    predict_handler = CommandHandler('predict', predict)
+
     cancel_handler = CommandHandler('cancel', cancel)
 
     help_handler = CommandHandler('help', helpp)
@@ -257,11 +309,12 @@ def main():
     dispatcher.add_handler(shutdown_handler)
 
     dispatcher.add_handler(ConversationHandler(
-        entry_points=[start_handler, get_diary_term_handler, get_diary_day_handler],
+        entry_points=[start_handler, get_diary_term_handler, get_diary_day_handler, predict_handler],
         states={
             START_CREDENTIALS: [MessageHandler(Filters.text, credentials)],
             GET_TERM: [MessageHandler(Filters.text, get_diary_numterm)],
-            GET_DAY: [MessageHandler(Filters.text, get_diary_numday)]
+            GET_DAY: [MessageHandler(Filters.text, get_diary_numday)],
+            PREDICT_SUBJECT: [MessageHandler(Filters.text, predict_subject)]
         },
         fallbacks=[cancel_handler]
     ))
