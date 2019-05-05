@@ -109,7 +109,7 @@ def get_profile_info(bot, update):
     chat = update.message.chat_id
 
     user_data = users[chat].data
-    reply_msg = '<b>Информация о вашем профиле:</b>'
+    reply_msg = '<b>Информация о вашем профиле:</b>\n'
     translation = {
         'name': 'Имя',
         'login': 'Логин',
