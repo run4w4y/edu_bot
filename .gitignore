@@ -3,3 +3,6 @@ __pycache__
 credentials
 bot_config.py
 *.png
+test.py
+*.txt
+proxy_parser.py

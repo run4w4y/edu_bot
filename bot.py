@@ -88,6 +88,8 @@ def helpp(bot, update):
                 '/diary_term - получить оценки за выбранную четверть/полугодие; \n' \
                 '/diary_today - показать страницу дневника за сегодня; \n' \
                 '/diary_day - показать страницу дневника за указанный день; \n' \
+                '/profile_info - показать данные профиля; \n' \
+                '/check_grades - проверить наличие новых оценок; \n' \
                 '/predict - предсказать средний балл за указанный предмет (имя предмета не чувствительно к регистру, также не обязательно писать его полностью, достаточно, например "русский" или "обж"); \n' \
                 '/cancel - отменить действие.'
     
@@ -260,6 +262,24 @@ def predict_subject(bot, update):
     return ConversationHandler.END
 
 
+@check_creds
+def check_grades(bot, update):
+    global users
+    chat = update.message.chat_id
+
+    bot.send_message(chat_id=chat, text="Пожалуйста, подождите...")
+    new_grades = users[chat].check_grades()
+
+    if not new_grades:
+        bot.send_message(chat_id=chat, text="Новых оценок нет")
+        return None
+
+    reply = ''
+    for key, value in new_grades.items():
+        reply += '{}: {}\n'.format(key, ', '.join(value))
+    bot.send_message(chat_id=chat, text=reply)
+
+
 def shutdown(bot, update):
     global updater
 
@@ -298,6 +318,12 @@ def main():
 
     help_handler = CommandHandler('help', helpp)
     dispatcher.add_handler(help_handler)
+
+    check_grades_handler = CommandHandler('check_grades', check_grades)
+    dispatcher.add_handler(check_grades_handler)
+
+    get_profile_info_handler = CommandHandler('profile_info', get_profile_info)
+    dispatcher.add_handler(get_profile_info_handler)
 
     get_diary_curterm_handler = CommandHandler('diary_curterm', get_diary_curterm)
     dispatcher.add_handler(get_diary_curterm_handler)
