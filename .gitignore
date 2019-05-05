@@ -1,0 +1,5 @@
+edu_parser
+__pycache__
+credentials
+bot_config.py
+*.png
