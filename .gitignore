@@ -6,3 +6,4 @@ bot_config.py
 test.py
 *.txt
 proxy_parser.py
+venv
