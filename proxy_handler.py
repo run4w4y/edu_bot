@@ -12,13 +12,12 @@ class ProxyHandler:
             self.good_proxies.put(proxy)
             return True
         except BaseException:
-            self.bad_proxies.append(proxy)
+            self.bad_proxies.put(proxy)
             return False
 
     def check_bad(self):
-        temp = self.bad_proxies
-        self.bad_proxies = []
-        for proxy in temp:
+        while not self.bad_proxies.empty():
+            proxy = self.bad_proxies.get()
             self.check(proxy)
             time.sleep(0.5)
 
@@ -32,7 +31,6 @@ class ProxyHandler:
         checker_thread.run()
 
     def check_all(self, verbose=False):
-        self.bad_proxies = []
         count = 0
         for proxy in self.all_proxies:
             count += 1
@@ -44,7 +42,7 @@ class ProxyHandler:
     def __init__(self, proxy_path='proxies.txt'):
         self.good_proxies = Queue()
         self.busy_proxies = {}
-        self.bad_proxies = []
+        self.bad_proxies = Queue()
         self.session = requests.session()
         with open(proxy_path, 'r') as f:
             self.all_proxies = [ast.literal_eval(line) for line in f.readlines()]
@@ -59,7 +57,7 @@ class ProxyHandler:
 
     def free_proxy(self, chat_id):
         proxy = self.busy_proxies[chat_id]
-        self.bad_proxies.append(proxy)
+        self.bad_proxies.put(proxy)
         del self.busy_proxies[chat_id]
 
     def run_check(self):
