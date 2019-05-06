@@ -174,6 +174,7 @@ def get_diary_curterm(bot, update):
     bot.send_message(chat_id=chat, text="Пожалуйста, подождите...")
     diary = users[chat].diary_term(draw=True, draw_path=str(chat) + 'grades.png')
     bot.send_photo(chat_id=chat, photo=open(str(chat) + 'grades.png', 'rb'))
+    os.remove(str(chat) + 'grades.png')
 
 
 def get_diary_term(bot, update):
@@ -199,6 +200,7 @@ def get_diary_numterm(bot, update):
     bot.send_message(chat_id=chat, text="Пожалуйста, подождите...")
     diary = users[chat].diary_term(term=str(reply), draw=True, draw_path=str(chat) + 'grades' + str(reply) + '.png')
     bot.send_photo(chat_id=chat, photo=open(str(chat) + 'grades' + str(reply) + '.png', 'rb'))
+    os.remove(str(chat) + 'grades' + str(reply) + '.png')
     return ConversationHandler.END
 
 
