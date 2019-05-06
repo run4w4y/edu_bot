@@ -58,6 +58,7 @@ def use_proxy(f):
                 proxies.free_proxy(chat_id=chat)
             except (ProxyError, ConnectionError):
                 proxies.free_proxy(chat_id=chat)
+                again = False
 
         return res
 
