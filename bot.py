@@ -8,7 +8,7 @@ from edu_parser.profile import Profile
 from edu_parser.exceptions import *
 from datetime import datetime
 from proxy_handler import ProxyHandler
-from requests.exceptions import ProxyError
+from requests.exceptions import ProxyError, ConnectionError
 import os
 
 bot = telegram.Bot(token=token)
@@ -56,7 +56,7 @@ def use_proxy(f):
                 res = f(bot, update)
                 users[chat].logout()
                 proxies.free_proxy(chat_id=chat)
-            except ProxyError:
+            except (ProxyError, ConnectionError):
                 proxies.free_proxy(chat_id=chat)
 
         return res
