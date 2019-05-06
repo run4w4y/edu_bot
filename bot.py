@@ -15,7 +15,8 @@ import os
 bot = telegram.Bot(token=token)
 updater = Updater(token=token)
 dispatcher = updater.dispatcher
-proxies = ProxyHandler(proxy_path='good_proxies.txt')
+if main_proxy:
+    proxies = ProxyHandler(proxy_path='good_proxies.txt')
 
 users = {}
 
@@ -175,6 +176,7 @@ def get_diary_curterm(bot, update):
     diary = users[chat].diary_term(draw=True, draw_path=str(chat) + 'grades.png')
     bot.send_photo(chat_id=chat, photo=open(str(chat) + 'grades.png', 'rb'))
     os.remove(str(chat) + 'grades.png')
+    bot.send_message(chat_id=chat, text=str(diary))
 
 
 def get_diary_term(bot, update):
