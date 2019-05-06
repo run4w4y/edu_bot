@@ -348,18 +348,29 @@ def shutdown(bot, update):
         exit(0)
 
 
+def creds_from_file(filename):
+    with open('credentials/' + filename) as f:
+        if not main_proxy:
+            chat = int(filename.split('.txt')[0])
+            again = True
+            while again:
+                try:
+                    users[chat] = Profile(ast.literal_eval(f.readline()), proxy=proxies.get_proxy(chat))
+                    users[chat].logout()
+                    again = False
+                    proxies.free_proxy(chat)
+                except (ProxyError, ConnectionError):
+                    proxies.free_proxy(chat_id=chat)
+        else:
+            users[int(filename.split('.txt')[0])] = Profile(ast.literal_eval(f.readline()), proxy=main_proxy)
+
+
 def main():
     global bot, updater, dispatcher, users
 
     for filename in os.listdir('credentials'):
-        with open('credentials/' + filename) as f:
-            if not main_proxy:
-                chat = int(filename.split('.txt')[0])
-                users[chat] = Profile(ast.literal_eval(f.readline()), proxy=proxies.get_proxy(chat))
-                users[chat].logout()
-                proxies.free_proxy(chat)
-            else:
-                users[int(filename.split('.txt')[0])] = Profile(ast.literal_eval(f.readline()), proxy=main_proxy)
+        creds_from_file(filename)
+
     print(users)
 
     logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
