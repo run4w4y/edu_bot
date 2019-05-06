@@ -15,14 +15,23 @@ class ProxyHandler:
             self.bad_proxies.append(proxy)
             return False
 
-    def check_bad(self, verbose=True):
+    def check_bad(self):
         temp = self.bad_proxies
         self.bad_proxies = []
         for proxy in temp:
             self.check(proxy)
-            time.sleep(0.1)
+            time.sleep(0.5)
 
-    def check_all(self, verbose=True):
+    def checker(self):
+        while True:
+            self.check_bad()
+            time.sleep(5)
+
+    def run_checker(self):
+        checker_thread = threading.Thread(target=self.checker)
+        checker_thread.run()
+
+    def check_all(self, verbose=False):
         self.bad_proxies = []
         count = 0
         for proxy in self.all_proxies:
@@ -30,6 +39,7 @@ class ProxyHandler:
             status = self.check(proxy)
             if verbose:
                 print('[O] -' if status else '[X] -', proxy['https'])
+        self.run_checker()
 
     def __init__(self, proxy_path='proxies.txt'):
         self.good_proxies = Queue()
@@ -55,4 +65,3 @@ class ProxyHandler:
     def run_check(self):
         check_thread = threading.Thread(target=self.check_all)
         check_thread.start()
-        check_thread.join()
