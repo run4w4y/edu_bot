@@ -56,9 +56,9 @@ def use_proxy(f):
                 res = f(bot, update)
                 users[chat].logout()
                 proxies.free_proxy(chat_id=chat)
+                again = False
             except (ProxyError, ConnectionError):
                 proxies.free_proxy(chat_id=chat)
-                again = False
 
         return res
 
