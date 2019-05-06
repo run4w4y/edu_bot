@@ -358,6 +358,7 @@ def creds_from_file(filename):
             while again:
                 try:
                     eval_str = f.readline().strip()
+                    print(filename, eval_str)
                     users[chat] = Profile(ast.literal_eval(eval_str), proxy=proxies.get_proxy(chat))
                     again = False
                     users[chat].logout()
