@@ -49,7 +49,7 @@ def use_proxy(f):
         chat = update.message.chat_id
         users[chat].change_proxy(new_proxy=proxies.get_proxy(chat_id=chat))
         res = f(bot, update)
-        users.chat.logout()
+        users[chat].logout()
         proxies.free_proxy(chat_id=chat)
         return res
 
