@@ -8,7 +8,7 @@ import threading
 class ProxyHandler:
     def check(self, proxy):
         try:
-            self.session.get('https://edu.tatar.ru/logon', proxies=proxy, timeout=2)
+            requests.get('https://edu.tatar.ru/logon', proxies=proxy, timeout=2)
             self.good_proxies.put(proxy)
             return True
         except BaseException:
@@ -19,7 +19,7 @@ class ProxyHandler:
         while not self.bad_proxies.empty():
             proxy = self.bad_proxies.get()
             self.check(proxy)
-            time.sleep(0.5)
+            time.sleep(1.5)
 
     def checker(self):
         while True:
@@ -35,6 +35,7 @@ class ProxyHandler:
         for proxy in self.all_proxies:
             count += 1
             status = self.check(proxy)
+            time.sleep(1.5)
             if verbose:
                 print('[O] -' if status else '[X] -', proxy['https'])
         self.run_checker()
@@ -43,7 +44,6 @@ class ProxyHandler:
         self.good_proxies = Queue()
         self.busy_proxies = {}
         self.bad_proxies = Queue()
-        self.session = requests.session()
         with open(proxy_path, 'r') as f:
             self.all_proxies = [ast.literal_eval(line) for line in f.readlines()]
         self.run_check()

@@ -3,7 +3,8 @@ import ast
 import telegram
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
-from bot_config import token, adminlist, proxy
+from bot_config import token, adminlist
+from proxy_config import proxy as main_proxy
 from edu_parser.profile import Profile
 from edu_parser.exceptions import *
 from datetime import datetime
@@ -46,6 +47,9 @@ def check_creds(f):
 
 def use_proxy(f):
     def wrap(bot, update):
+        if main_proxy:
+            return f(bot, update)
+
         global users
         chat = update.message.chat_id
 
@@ -95,7 +99,11 @@ def credentials(bot, update):
 
     try:
         bot.send_message(chat_id=chat, text="Пожалуйста, подождите...")
-        users[chat] = Profile(creds, proxy=proxies.get_proxy(chat))
+        if not main_proxy:
+            users[chat] = Profile(creds, proxy=proxies.get_proxy(chat))
+        else:
+            users[chat] = Profile(creds, proxy=main_proxy)
+
     except CredentialsError:
         bot.send_message(chat_id=chat, text="Неправильный логин или пароль. Попробуйте еще раз.")
         return START_CREDENTIALS
@@ -104,8 +112,9 @@ def credentials(bot, update):
     with open('credentials/{}.txt'.format(chat), 'w') as f:
         f.write(str(creds))
 
-    users[chat].logout()
-    proxies.free_proxy(chat)
+    if not main_proxy:
+        users[chat].logout()
+        proxies.free_proxy(chat)
     return ConversationHandler.END
 
 
