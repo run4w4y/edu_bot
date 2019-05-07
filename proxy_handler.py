@@ -8,7 +8,7 @@ import threading
 class ProxyHandler:
     def check(self, proxy):
         try:
-            requests.get('https://edu.tatar.ru/logon', proxies=proxy, timeout=2)
+            requests.get('https://edu.tatar.ru/logon', proxies=proxy, timeout=4)
             self.good_proxies.put(proxy)
             return True
         except BaseException:
