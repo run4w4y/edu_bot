@@ -70,6 +70,19 @@ def use_proxy(f):
     return wrap
 
 
+def account_action(f):
+    def wrap(bot, update):
+        global users
+
+        chat = update.message.chat_id
+        users[chat].login()
+        res = f(bot, update)
+        users[chat].logout()
+        return res
+
+    return wrap
+
+
 def start(bot, update):
     global users
     chat = update.message.chat_id
@@ -167,6 +180,7 @@ def get_profile_info(bot, update):
 
 
 @check_creds
+@account_action
 @use_proxy
 def get_diary_curterm(bot, update):
     global users
@@ -186,6 +200,7 @@ def get_diary_term(bot, update):
 
 
 @check_creds
+@account_action
 @use_proxy
 def get_diary_numterm(bot, update):
     global users
@@ -206,6 +221,7 @@ def get_diary_numterm(bot, update):
 
 
 @check_creds
+@account_action
 @use_proxy
 def get_diary_today(bot, update):
     global users
@@ -245,6 +261,7 @@ def get_diary_day(bot, update):
 
 
 @check_creds
+@account_action
 @use_proxy
 def get_diary_numday(bot, update):
     global users
@@ -294,6 +311,7 @@ def predict(bot, update):
 
 
 @check_creds
+@account_action
 @use_proxy
 def predict_subject(bot, update):
     global users
@@ -317,6 +335,7 @@ def predict_subject(bot, update):
 
 
 @check_creds
+@account_action
 @use_proxy
 def check_grades(bot, update):
     global users
